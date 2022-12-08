@@ -1,0 +1,44 @@
+<template>
+  <v-app>
+    <navBar />
+    <v-main>
+      <v-container :fluid="true">
+        <router-view />
+      </v-container>
+    </v-main>
+  </v-app>
+</template>
+
+<script>
+import navBar from "@/components/common/navbar.vue";
+export default {
+  name: "App",
+
+  data: () => ({
+    //
+  }),
+  components: {
+    navBar,
+  },
+};
+</script>
+
+<style>
+::-webkit-scrollbar {
+  width: 8px;
+  border: 4px solid white;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #7f8c8d;
+  background-clip: padding-box;
+  border: 0.05em solid #eeeeee;
+  border-radius: 16px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #95a5a6;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-track {
+  background-color: #ecf0f1;
+}
+</style>

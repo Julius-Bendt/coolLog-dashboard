@@ -1,5 +1,5 @@
 <template>
-  <nav v-if="authentication.loggedIn">
+  <nav>
     <v-app-bar app clipped-left color="primary">
       <v-app-bar-nav-icon
         class="white--text"
@@ -44,12 +44,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref } from "vue";
 import { useTheme } from "vuetify";
-import router from "@/router";
 import { useAuthenticationStore } from "@/stores/authentication";
-
-const authentication = useAuthenticationStore();
 
 const links = ref([
   {
@@ -70,10 +67,6 @@ const links = ref([
 const drawer = ref(true);
 const darkmode = ref(false);
 
-const loggedIn = computed(() => {
-  return localStorage.getItem("api-token");
-});
-
 const theme = useTheme();
 function toggleDarkmode() {
   darkmode.value = !darkmode.value;
@@ -84,15 +77,7 @@ function toggleDarkmode() {
 }
 
 async function logout() {
-  console.log("logout");
-  localStorage.removeItem("api-token", null);
-  router.replace("login");
+  const authentication = useAuthenticationStore();
+  authentication.logout();
 }
-
-onMounted(() => {
-  if (localStorage.theme) {
-    theme.global.name.value = localStorage.getItem("theme");
-    darkmode.value = localStorage.getItem("theme") === "dark";
-  }
-});
 </script>

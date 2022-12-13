@@ -1,26 +1,50 @@
 <template>
   <v-app>
-    <navBar />
+    <navBar v-if="authentication.loggedIn && !loading" />
     <v-main>
-      <v-container :fluid="true">
-        <router-view />
+      <v-container :fluid="true" class="fill-height">
+        <v-row
+          v-if="loading"
+          align="center"
+          justify="center"
+          class="fill-height"
+        >
+          <v-col cols="4">
+            <loader />
+          </v-col>
+        </v-row>
+        <router-view v-else />
       </v-container>
     </v-main>
   </v-app>
 </template>
 
-<script>
-import navBar from "@/components/common/navbar.vue";
-export default {
-  name: "App",
+<script setup>
+import { onMounted, ref } from "vue";
+import { useTheme } from "vuetify";
 
-  data: () => ({
-    //
-  }),
-  components: {
-    navBar,
-  },
-};
+import navBar from "@/components/common/navbar.vue";
+import loader from "@/components/common/loading.vue";
+
+import { useAuthenticationStore } from "@/stores/authentication";
+const authentication = useAuthenticationStore();
+
+const loading = ref(false);
+
+onMounted(async () => {
+  // Set theme
+  if (localStorage.theme) {
+    const theme = useTheme();
+    theme.global.name.value = localStorage.getItem("theme");
+  }
+
+  loading.value = true;
+
+  const loggedIn = await authentication.autoLogin();
+  console.log("Logged in: " + loggedIn);
+
+  loading.value = false;
+});
 </script>
 
 <style>

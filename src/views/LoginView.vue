@@ -1,31 +1,16 @@
 <template>
-  <div>
-    <v-row>
-      <v-col cols="12" sm="4" class="mx-auto">
-        <v-btn
-          @click="redirectToLogin"
-          prepend-icon="mdi-microsoft-windows"
-          block
-          variant="outlined"
-        >
-          SSO login
-        </v-btn>
-      </v-col>
-    </v-row>
-
-    <v-row>
-      <v-col cols="12" sm="4" class="mx-auto">
-        <v-btn
-          @click="getAccount"
-          prepend-icon="mdi-microsoft-windows"
-          block
-          variant="outlined"
-        >
-          Get Account
-        </v-btn>
-      </v-col>
-    </v-row>
-  </div>
+  <v-row align="center" justify="center" class="fill-height">
+    <v-col cols="6" sm="4">
+      <v-btn
+        @click="redirectToLogin"
+        prepend-icon="mdi-microsoft-windows"
+        block
+        variant="outlined"
+      >
+        SSO login
+      </v-btn>
+    </v-col>
+  </v-row>
 </template>
 
 <script setup>
@@ -41,8 +26,6 @@ function redirectToLogin() {
 }
 
 function getAccount() {
-  authentication.serverLogin();
-  // localStorage.setItem("api-token", "1234");
-  // router.replace("dashboard");
+  authentication.getAccountFromAzure();
 }
 </script>

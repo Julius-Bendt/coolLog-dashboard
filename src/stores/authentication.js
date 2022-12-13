@@ -1,6 +1,8 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
 import { UserAgentApplication } from "msal";
+import { getRequest, postRequest } from "@/services/http";
+import router from "@/router";
 
 const tokenConfig = {
   scopes: ["User.Read"],
@@ -23,7 +25,6 @@ const auth = new UserAgentApplication(authConfig);
 
 export const useAuthenticationStore = defineStore("authentication", () => {
   const loggedIn = ref(false);
-  const loggingIn = ref(false);
   const username = ref("");
 
   auth.handleRedirectCallback((error, resolve) => {
@@ -31,37 +32,66 @@ export const useAuthenticationStore = defineStore("authentication", () => {
       console.error(error);
     }
 
-    console.log("No errros! got data!");
-    serverLogin();
+    getAccountFromAzure();
   });
 
-  function logout() {
-    auth.logout();
+  function logout(azureLogout = true) {
+    if (azureLogout) {
+      auth.logout();
+    }
+
     localStorage.removeItem("api-token");
     loggedIn.value = false;
+    router.replace("Login");
   }
 
   function sso() {
     auth.loginRedirect(tokenConfig);
   }
 
-  function getAccountFromAzure() {
+  async function getAccountFromAzure() {
     const azureAccount = auth.getAccount();
 
     if (azureAccount) {
-      auth
-        .acquireTokenSilent(tokenConfig)
-        .catch(() => auth.acquireTokenRedirect(tokenConfig))
-        .then((data) => {
-          const account = requestAccountFromBackend(data.accessToken);
-        })
-        .catch((error) => {
-          console.error("error", error);
-        });
+      const data = await auth.acquireTokenSilent(tokenConfig);
+      console.log(data);
+      await loginFromBackend(data.accessToken);
     }
   }
 
-  function serverLogin() {}
+  async function loginFromBackend(accessToken) {
+    const response = await postRequest({
+      endpoint: "/authenticate",
+      payload: { access_token: accessToken },
+      skipAuth: true,
+    });
 
-  return { loggedIn, loggingIn, sso, serverLogin, getTokenFromAzure, logout };
+    username.value = response.data.user.name;
+    localStorage.setItem("api-token", response.data.access_token);
+    loggedIn.value = true;
+  }
+
+  async function getUserFromBackend() {
+    const response = await getRequest({ endpoint: "/user" });
+    loggedIn.value = true;
+  }
+
+  async function autoLogin() {
+    // Verify and get information about user, otherwise try to load a token from Azure
+    localStorage.getItem("api-token")
+      ? await getUserFromBackend()
+      : await getAccountFromAzure();
+
+    if (loggedIn.value) {
+      router.replace("Dashboard");
+    }
+    return loggedIn.value;
+  }
+
+  return {
+    loggedIn,
+    sso,
+    autoLogin,
+    logout,
+  };
 });

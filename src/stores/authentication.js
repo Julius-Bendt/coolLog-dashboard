@@ -73,6 +73,7 @@ export const useAuthenticationStore = defineStore("authentication", () => {
 
   async function getUserFromBackend() {
     const response = await getRequest({ endpoint: "/user" });
+    username.value = response.data.name;
     loggedIn.value = true;
   }
 
@@ -85,6 +86,7 @@ export const useAuthenticationStore = defineStore("authentication", () => {
     if (loggedIn.value) {
       router.replace("Dashboard");
     }
+
     return loggedIn.value;
   }
 

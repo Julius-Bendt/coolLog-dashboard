@@ -18,7 +18,16 @@
     <v-navigation-drawer color="primary" app clipped v-model="drawer">
       <v-list shaped class="mt-4">
         <v-list-item
-          v-for="(link, i) in links"
+          router
+          to="/dashboard"
+          title="Dashboard"
+          prepend-icon="mdi-home"
+        >
+        </v-list-item>
+
+        <v-list-item
+          v-for="link in services"
+          :key="link.title"
           router
           :to="link.route"
           :disabled="link.disabled"
@@ -33,9 +42,9 @@
         <div class="pa-2">
           <v-switch
             @click="toggleDarkmode"
-            v-model="$vuetify.theme.dark"
+            v-model="darkmode"
             class="ml-10 mt-10"
-            :label="$vuetify.theme.dark ? 'Light mode 🌞' : 'Dark mode 🌑'"
+            :label="darkmode ? 'Dark mode 🌑' : 'Light mode 🌞'"
           ></v-switch>
         </div>
       </template>
@@ -44,25 +53,10 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useTheme } from "vuetify";
 import { useAuthenticationStore } from "@/stores/authentication";
-
-const links = ref([
-  {
-    icon: "mdi-home",
-    title: "Dashboard",
-    route: "/dashboard",
-  },
-  {
-    title: "Core",
-    route: "/services/core",
-  },
-  {
-    title: "Advisering",
-    route: "/services/advisering",
-  },
-]);
+import { useServiceStore } from "@/stores/service";
 
 const drawer = ref(true);
 const darkmode = ref(false);
@@ -76,8 +70,20 @@ function toggleDarkmode() {
   localStorage.setItem("theme", darkmode.value ? "dark" : "light");
 }
 
+const serivceStore = useServiceStore();
+const services = computed(() =>
+  serivceStore.serviceNames.map((name) => ({
+    title: name,
+    route: `/services/${name}`,
+  }))
+);
+
 async function logout() {
   const authentication = useAuthenticationStore();
   authentication.logout();
 }
+
+onMounted(() => {
+  darkmode.value = localStorage.getItem("theme") === "dark";
+});
 </script>

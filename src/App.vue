@@ -26,7 +26,9 @@ import { useTheme } from "vuetify";
 import navBar from "@/components/common/navbar.vue";
 import loader from "@/components/common/loading.vue";
 
+import { useServiceStore } from "@/stores/service";
 import { useAuthenticationStore } from "@/stores/authentication";
+
 const authentication = useAuthenticationStore();
 
 const loading = ref(false);
@@ -42,6 +44,11 @@ onMounted(async () => {
 
   const loggedIn = await authentication.autoLogin();
   console.log("Logged in: " + loggedIn);
+
+  if (loggedIn) {
+    const service = useServiceStore();
+    await service.getServiceNames();
+  }
 
   loading.value = false;
 });

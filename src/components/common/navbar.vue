@@ -18,13 +18,14 @@
     <v-navigation-drawer color="primary" app clipped v-model="drawer">
       <v-list shaped class="mt-4">
         <v-list-item
+          class="py-6"
           router
           to="/dashboard"
           title="Dashboard"
           prepend-icon="mdi-home"
         >
         </v-list-item>
-
+        <hr class="mb-2" />
         <v-list-item
           v-for="link in services"
           :key="link.title"

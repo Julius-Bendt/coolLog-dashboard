@@ -15,7 +15,7 @@
     <tbody>
       <stacktraceItem
         v-for="trace in traces"
-        :key="trace.name"
+        :key="trace.message + trace.createdAt"
         :trace="trace"
         :showTimes="showTimes"
       />

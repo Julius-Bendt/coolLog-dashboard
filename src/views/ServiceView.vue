@@ -13,19 +13,19 @@
             @update:model-value="changeTab"
             bg-color="primary"
           >
-            <v-tab value="live-trace">Live updating</v-tab>
             <v-tab value="trace">Stacktraces</v-tab>
+            <v-tab value="live-trace">Live updating</v-tab>
             <v-tab value="statistics">Statistics</v-tab>
           </v-tabs>
 
           <v-card-text>
             <v-window :model-value="tab" :key="`${serviceName}_${lastUpdate}`">
-              <v-window-item value="live-trace">
-                <liveStacktrace :appName="serviceName" />
-              </v-window-item>
-
               <v-window-item value="trace">
                 <stacktrace :appName="serviceName" />
+              </v-window-item>
+
+              <v-window-item value="live-trace">
+                <liveStacktrace :appName="serviceName" />
               </v-window-item>
 
               <v-window-item value="statistics" :appName="serviceName">

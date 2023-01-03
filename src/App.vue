@@ -43,7 +43,6 @@ onMounted(async () => {
   loading.value = true;
 
   const loggedIn = await authentication.autoLogin();
-  console.log("Logged in: " + loggedIn);
 
   if (loggedIn) {
     const service = useServiceStore();

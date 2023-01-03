@@ -25,16 +25,17 @@
           prepend-icon="mdi-home"
         >
         </v-list-item>
-        <hr class="mb-2" />
+        <hr class="my-2" style="border: 0.1px solid #2f3640" />
         <v-list-item
-          v-for="link in services"
-          :key="link.title"
+          v-for="service in serviceStore.availableServices"
+          :key="service.title"
+          :to="service.route"
+          :title="service.title"
           router
-          :to="link.route"
-          :disabled="link.disabled"
-          :title="link.title"
-          :prepend-icon="link.icon"
         >
+          <template v-slot:append v-if="service.count > 0">
+            <v-badge color="error" :content="service.count" inline></v-badge>
+          </template>
         </v-list-item>
       </v-list>
 
@@ -61,6 +62,7 @@ import { useServiceStore } from "@/stores/service";
 
 const drawer = ref(true);
 const darkmode = ref(false);
+const serviceStore = useServiceStore();
 
 const theme = useTheme();
 function toggleDarkmode() {
@@ -70,14 +72,6 @@ function toggleDarkmode() {
 
   localStorage.setItem("theme", darkmode.value ? "dark" : "light");
 }
-
-const serivceStore = useServiceStore();
-const services = computed(() =>
-  serivceStore.serviceNames.map((name) => ({
-    title: name,
-    route: `/services/${name}`,
-  }))
-);
 
 async function logout() {
   const authentication = useAuthenticationStore();

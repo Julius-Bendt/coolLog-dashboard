@@ -36,19 +36,28 @@ export const useStacktraceStore = defineStore("stacktrace", () => {
     loading.value = false;
   }
 
-  async function loadNewestStacktrace(appName, perPage = 20, newFilters) {
+  async function loadNewestStacktrace(appName, perPage = 20) {
     loading.value = true;
-
-    filters = newFilters;
 
     const response = await postRequest({
       endpoint: `services/newest/${appName}/${perPage}`,
-      payload: filters,
     });
 
     setData(response);
 
     loading.value = false;
+  }
+
+  async function requestStacktraces(exception_ids) {
+    const response = await postRequest({
+      endpoint: "services/load",
+      payload: { ids: exception_ids },
+    });
+
+    response.data.forEach((newTrace) => {
+      newTrace.fadeIn = true;
+      stacktraces.value.unshift(newTrace);
+    });
   }
 
   async function loadNext() {
@@ -57,9 +66,6 @@ export const useStacktraceStore = defineStore("stacktrace", () => {
       `${import.meta.env.VITE_API_ENDPOINT}/api/v1`,
       ""
     );
-
-    console.log(url);
-    console.log(nextCursor.value);
 
     loading.value = true;
 
@@ -97,6 +103,7 @@ export const useStacktraceStore = defineStore("stacktrace", () => {
     stacktraces,
     loadSearchableStacktrace,
     loadNewestStacktrace,
+    requestStacktraces,
     loadNext,
     nextCursor,
     loadPrev,

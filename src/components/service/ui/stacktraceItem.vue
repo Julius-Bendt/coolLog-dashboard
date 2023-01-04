@@ -1,7 +1,7 @@
 <template>
   <tr :class="{ 'fade-color': trace.fadeIn }">
     <td>
-      <p>{{ trace.createdAt }} fade in: {{ trace.fadeIn ?? false }}</p>
+      <p>{{ trace.createdAt }}</p>
     </td>
     <td>
       <p>{{ trace.message }}</p>
@@ -61,7 +61,7 @@ function getStatusCodeColor(statusCode) {
 }
 
 function openStacktrace() {
-  stacktraceDialogRef.value.openDialog(props.trace.stacktraceLink);
+  stacktraceDialogRef.value.openDialog(props.trace.id);
 }
 
 function openCurl() {

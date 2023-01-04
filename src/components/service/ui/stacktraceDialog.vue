@@ -7,18 +7,48 @@
         <v-card-text>
           <h2>Stacktrace</h2>
           <div class="d-flex">
-            <v-chip class="mr-2 mt-2" color="primary">Service class/file</v-chip
-            ><v-chip class="ma-2" color="orange">Vendor class/file</v-chip
-            ><v-chip class="ma-2" color="red">Laravel class/file</v-chip>
+            <v-chip
+              @click="toggleType(type.type)"
+              v-for="type in types"
+              :key="type.title"
+              class="ma-2"
+              :color="type.color"
+              >{{ type.title }} {{ isHidden(type.type) ? "❌" : "✅" }}</v-chip
+            >
           </div>
         </v-card-text>
         <v-timeline side="end" align="start">
           <v-timeline-item
-            v-for="(trace, i) in stacktrace"
+            :dot-color="getDotColor(exceptionData.file)"
+            size="small"
+          >
+            <div
+              class="d-flex"
+              :class="{ opacity: isHidden(fileType(exceptionData.file).type) }"
+            >
+              <div>
+                <div>
+                  <h3>{{ exceptionData.message }}</h3>
+                </div>
+                <div>
+                  Throw at line {{ exceptionData.line }} in
+                  {{ splitFilePath(exceptionData.file)[0] }}/<strong>{{
+                    splitFilePath(exceptionData.file)[1]
+                  }}</strong>
+                </div>
+              </div>
+            </div>
+          </v-timeline-item>
+
+          <v-timeline-item
+            v-for="(trace, i) in exceptionData.stacktrace"
             :dot-color="getDotColor(trace.file)"
             size="small"
           >
-            <div class="d-flex">
+            <div
+              class="d-flex"
+              :class="{ opacity: isHidden(fileType(trace.file).type) }"
+            >
               <div>
                 <div>
                   <strong>At</strong> line {{ trace.line }} in {{ trace.file }}
@@ -42,248 +72,93 @@
 
 <script setup>
 import { ref } from "vue";
+import { getRequest } from "@/services/http";
+
 import loader from "@/components/common/loading.vue";
 const open = ref(false);
 const loading = ref(false);
-const stacktrace = ref([]);
+const exceptionData = ref([]);
 
-const openDialog = function openCurl(stacktraceLink) {
-  stacktrace.value = getStacktrace(stacktraceLink);
-  console.log(stacktrace.value);
+const hiddenTypes = ref([]);
+
+const types = ref([
+  {
+    title: "Service class/file",
+    type: "service",
+    color: "primary",
+    includes: "app",
+  },
+  {
+    title: "Laravel class/file",
+    type: "laravel",
+    color: "red",
+    includes: "Illuminate",
+  },
+  {
+    title: "Vendor class/file",
+    type: "vendor",
+    color: "orange",
+    includes: "vendor",
+  },
+  {
+    title: "composer/unknown",
+    type: "composer",
+    color: "green",
+    includes: "aaaaaa",
+  },
+]);
+
+const openDialog = function openCurl(exceptionId) {
   open.value = true;
+  getStacktrace(exceptionId);
 };
 
-function getStacktrace(stacktraceLink) {
+async function getStacktrace(exceptionId) {
   loading.value = true;
-
+  const response = await getRequest({ endpoint: `stacktrace/${exceptionId}` });
   loading.value = false;
 
-  return [
-    {
-      file: "/var/www/html/vendor/guzzlehttp/guzzle/src/Middleware.php",
-      line: 69,
-      function: "create",
-      class: "GuzzleHttp\\Exception\\RequestException",
-      type: "::",
-    },
-    {
-      file: "/var/www/html/vendor/guzzlehttp/promises/src/Promise.php",
-      line: 204,
-      function: "GuzzleHttp\\{closure}",
-      class: "GuzzleHttp\\Middleware",
-      type: "::",
-    },
-    {
-      file: "/var/www/html/vendor/guzzlehttp/promises/src/Promise.php",
-      line: 153,
-      function: "callHandler",
-      class: "GuzzleHttp\\Promise\\Promise",
-      type: "::",
-    },
-    {
-      file: "/var/www/html/vendor/guzzlehttp/promises/src/TaskQueue.php",
-      line: 48,
-      function: "GuzzleHttp\\Promise\\{closure}",
-      class: "GuzzleHttp\\Promise\\Promise",
-      type: "::",
-    },
-    {
-      file: "/var/www/html/vendor/guzzlehttp/guzzle/src/Handler/CurlMultiHandler.php",
-      line: 158,
-      function: "run",
-      class: "GuzzleHttp\\Promise\\TaskQueue",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/guzzlehttp/guzzle/src/Handler/CurlMultiHandler.php",
-      line: 183,
-      function: "tick",
-      class: "GuzzleHttp\\Handler\\CurlMultiHandler",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/guzzlehttp/promises/src/Promise.php",
-      line: 248,
-      function: "execute",
-      class: "GuzzleHttp\\Handler\\CurlMultiHandler",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/guzzlehttp/promises/src/Promise.php",
-      line: 224,
-      function: "invokeWaitFn",
-      class: "GuzzleHttp\\Promise\\Promise",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/guzzlehttp/promises/src/Promise.php",
-      line: 269,
-      function: "waitIfPending",
-      class: "GuzzleHttp\\Promise\\Promise",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/guzzlehttp/promises/src/Promise.php",
-      line: 226,
-      function: "invokeWaitList",
-      class: "GuzzleHttp\\Promise\\Promise",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/guzzlehttp/promises/src/Promise.php",
-      line: 62,
-      function: "waitIfPending",
-      class: "GuzzleHttp\\Promise\\Promise",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/guzzlehttp/guzzle/src/Client.php",
-      line: 187,
-      function: "wait",
-      class: "GuzzleHttp\\Promise\\Promise",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/guzzlehttp/guzzle/src/ClientTrait.php",
-      line: 95,
-      function: "request",
-      class: "GuzzleHttp\\Client",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/app/Services/RelatelSMSProvider.php",
-      line: 79,
-      function: "post",
-      class: "GuzzleHttp\\Client",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/app/Console/Commands/ProcessSmsCommand.php",
-      line: 61,
-      function: "send",
-      class: "App\\Services\\RelatelSMSProvider",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/laravel/framework/src/Illuminate/Database/Concerns/BuildsQueries.php",
-      line: 141,
-      function: "App\\Console\\Commands\\{closure}",
-      class: "App\\Console\\Commands\\ProcessSmsCommand",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/app/Console/Commands/ProcessSmsCommand.php",
-      line: 86,
-      function: "chunkById",
-      class: "Illuminate\\Database\\Eloquent\\Builder",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php",
-      line: 36,
-      function: "handle",
-      class: "App\\Console\\Commands\\ProcessSmsCommand",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/laravel/framework/src/Illuminate/Container/Util.php",
-      line: 41,
-      function: "Illuminate\\Container\\{closure}",
-      class: "Illuminate\\Container\\BoundMethod",
-      type: "::",
-    },
-    {
-      file: "/var/www/html/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php",
-      line: 93,
-      function: "unwrapIfClosure",
-      class: "Illuminate\\Container\\Util",
-      type: "::",
-    },
-    {
-      file: "/var/www/html/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php",
-      line: 37,
-      function: "callBoundMethod",
-      class: "Illuminate\\Container\\BoundMethod",
-      type: "::",
-    },
-    {
-      file: "/var/www/html/vendor/laravel/framework/src/Illuminate/Container/Container.php",
-      line: 651,
-      function: "call",
-      class: "Illuminate\\Container\\BoundMethod",
-      type: "::",
-    },
-    {
-      file: "/var/www/html/vendor/laravel/framework/src/Illuminate/Console/Command.php",
-      line: 136,
-      function: "call",
-      class: "Illuminate\\Container\\Container",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/symfony/console/Command/Command.php",
-      line: 291,
-      function: "execute",
-      class: "Illuminate\\Console\\Command",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/laravel/framework/src/Illuminate/Console/Command.php",
-      line: 121,
-      function: "run",
-      class: "Symfony\\Component\\Console\\Command\\Command",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/symfony/console/Application.php",
-      line: 998,
-      function: "run",
-      class: "Illuminate\\Console\\Command",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/symfony/console/Application.php",
-      line: 299,
-      function: "doRunCommand",
-      class: "Symfony\\Component\\Console\\Application",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/symfony/console/Application.php",
-      line: 171,
-      function: "doRun",
-      class: "Symfony\\Component\\Console\\Application",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/laravel/framework/src/Illuminate/Console/Application.php",
-      line: 102,
-      function: "run",
-      class: "Symfony\\Component\\Console\\Application",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php",
-      line: 129,
-      function: "run",
-      class: "Illuminate\\Console\\Application",
-      type: "->",
-    },
-    {
-      file: "/var/www/html/artisan",
-      line: 37,
-      function: "handle",
-      class: "Illuminate\\Foundation\\Console\\Kernel",
-      type: "->",
-    },
-  ];
+  exceptionData.value = response.data;
+}
+
+function toggleType(type) {
+  if (hiddenTypes.value.includes(type)) {
+    hiddenTypes.value = hiddenTypes.value.filter((item) => item != type);
+    return;
+  }
+
+  hiddenTypes.value.push(type);
+}
+
+function isHidden(type) {
+  return hiddenTypes.value.includes(type);
+}
+
+function fileType(file) {
+  let fileType = types.value.find((type) => type.type === "composer");
+
+  types.value.forEach((type) => {
+    if (file.includes(type.includes) && fileType.type == "composer") {
+      fileType = type;
+    }
+  });
+
+  return fileType;
 }
 
 function getDotColor(file) {
-  if (file.includes("Illuminate")) return "red";
-  if (file.includes("vendor")) return "orange";
+  if (!file) {
+    return "green";
+  }
 
-  return "primary";
+  return fileType(file).color;
+}
+
+function splitFilePath(file) {
+  let strings = file.split("/");
+  const end = strings.pop();
+
+  return [strings.join("/"), end];
 }
 
 defineExpose({
@@ -291,7 +166,11 @@ defineExpose({
 });
 </script>
 
-<style>
+<style scoped>
+.opacity {
+  opacity: 0.25;
+}
+
 .close-btn {
   position: absolute;
   top: 0%;

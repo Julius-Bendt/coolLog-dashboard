@@ -31,8 +31,6 @@ router.afterEach((to, from) => {
 });
 
 router.beforeEach((to, from, next) => {
-  console.log("before each");
-
   if (localStorage.getItem("api-token") == null && to.name !== "Login") {
     next({
       name: "Login",

@@ -1,7 +1,7 @@
 <template>
-  <tr>
+  <tr :class="{ 'fade-color': trace.fadeIn }">
     <td>
-      <p>{{ trace.createdAt }}</p>
+      <p>{{ trace.createdAt }} fade in: {{ trace.fadeIn ?? false }}</p>
     </td>
     <td>
       <p>{{ trace.message }}</p>
@@ -72,5 +72,17 @@ function openCurl() {
 <style scoped>
 p {
   font-size: 12px;
+}
+
+.fade-color {
+  animation-name: fade-color;
+  animation-duration: 1s;
+  animation-timing-function: ease-in;
+}
+
+@keyframes fade-color {
+  from {
+    background-color: rgba(255, 166, 0, 0.75);
+  }
 }
 </style>

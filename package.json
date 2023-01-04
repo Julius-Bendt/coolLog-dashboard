@@ -15,6 +15,7 @@
     "axios": "^1.2.1",
     "msal": "^1.4.17",
     "pinia": "^2.0.26",
+    "pusher-js": "^8.0.0",
     "roboto-fontface": "*",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6",

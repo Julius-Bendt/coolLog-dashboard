@@ -104,7 +104,6 @@ export const useStacktraceStore = defineStore("stacktrace", () => {
       type: f.type.value,
     }));
 
-    console.log(filters);
     return filters;
   }
 

@@ -34,6 +34,26 @@
         </v-col>
       </v-row>
 
+      <v-row class="my-2">
+        <v-col offset="1" cols="10">
+          <stringFilter
+            @onFilterChanged="filterChanged"
+            title="Exception class filter"
+            filterKey="exception_class"
+          />
+        </v-col>
+      </v-row>
+
+      <v-row class="my-2">
+        <v-col offset="1" cols="10">
+          <stringFilter
+            @onFilterChanged="filterChanged"
+            title="File filter"
+            filterKey="file"
+          />
+        </v-col>
+      </v-row>
+
       <v-card-actions>
         <v-btn color="red" @click="open = false">Close Dialog</v-btn>
       </v-card-actions>
@@ -44,7 +64,11 @@
 <script setup>
 import { ref, watch, onMounted } from "vue";
 
-import { dateFilter, numberFilter } from "@/components/service/ui/filters";
+import {
+  dateFilter,
+  numberFilter,
+  stringFilter,
+} from "@/components/service/ui/filters";
 import { useFilterStore } from "@/stores/filter";
 
 const filterStore = useFilterStore();

@@ -6,6 +6,7 @@
           <v-text-field
             clearable
             label="Search for exception message"
+            @update:modelValue="searchUpdatedDebounced"
           ></v-text-field>
         </v-col>
         <v-col cols="2">
@@ -41,6 +42,8 @@ import stacktraceList from "@/components/service/ui/stacktraceList.vue";
 
 import { useStacktraceStore } from "@/stores/stacktrace";
 import { useFilterStore } from "@/stores/filter";
+
+import debounce from "@/helpers/debounce";
 const stacktraceStore = useStacktraceStore();
 const filterStore = useFilterStore();
 
@@ -50,13 +53,11 @@ const perPage = 25;
 
 const FiltersDialogRef = ref();
 
+const searchUpdatedDebounced = debounce(applySearch, 300);
+
 onMounted(() => {
   requestNewStacktrace();
 });
-
-function paginatorChanged() {
-  requestNewStacktrace();
-}
 
 async function requestNewStacktrace() {
   await stacktraceStore.loadSearchableStacktrace(props.appName, perPage);
@@ -64,5 +65,28 @@ async function requestNewStacktrace() {
 
 function openFilters() {
   FiltersDialogRef.value.openDialog();
+}
+
+function applySearch(value) {
+  // If less than 4 characters, dont search, unless length is 0
+  const shouldBeActive = value != null && value.length > 3 && value.length != 0;
+
+  const filter = {
+    active: shouldBeActive,
+    values: [value, ""],
+    type: { value: "=" },
+    key: "message",
+  };
+
+  filterStore.changeFilters(filter);
+
+  if (value.length > 3) {
+    requestNewStacktrace();
+    return;
+  }
+
+  if (value == null || value.length == 0) {
+    requestNewStacktrace();
+  }
 }
 </script>

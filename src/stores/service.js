@@ -24,7 +24,9 @@ export const useServiceStore = defineStore("service", () => {
     });
 
     availableServices.value = newServices;
-    orderServices();
+
+    changeTitle();
+    sortServices();
   });
 
   async function getServiceNames() {
@@ -35,15 +37,35 @@ export const useServiceStore = defineStore("service", () => {
       route: `/services/${name}`,
       count: 0,
     }));
-    orderServices();
+    sortServices();
   }
 
   function clearServiceCount(serviceName) {
     availableServices.value.find((s) => s.title === serviceName).count = 0;
+    changeTitle();
   }
 
-  function orderServices() {
+  function sortServices() {
     availableServices.value.sort((a, b) => (a.title > b.title ? 1 : -1));
+  }
+
+  function changeTitle() {
+    let title = document.title;
+
+    if (title.startsWith("(")) {
+      const titleSplit = title.split(" "); // Split string to array
+      titleSplit.shift(); // Remove first element
+      title = titleSplit.join(" "); // Join array to string
+    }
+
+    // Add up all notifications into an int
+    const newExceptionCount = availableServices.value.reduce(
+      (accumulator, current) => (accumulator += current.count),
+      0
+    );
+
+    // Set the new title
+    document.title = `(${newExceptionCount}) ${title}`;
   }
 
   return { availableServices, getServiceNames, clearServiceCount };

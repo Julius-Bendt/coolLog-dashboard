@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
-import { getRequest, postRequest } from "@/services/http";
+import { postRequest } from "@/services/http";
+import { useFilterStore } from "./filter";
 
 export const useStacktraceStore = defineStore("stacktrace", () => {
   const stacktraces = ref([]);
@@ -8,7 +9,6 @@ export const useStacktraceStore = defineStore("stacktrace", () => {
 
   const prevCursor = ref("");
   const nextCursor = ref("");
-  let filters = [];
 
   function setData(response) {
     stacktraces.value = response.data.data;
@@ -17,18 +17,12 @@ export const useStacktraceStore = defineStore("stacktrace", () => {
     nextCursor.value = response.data.next_page_url;
   }
 
-  async function loadSearchableStacktrace(
-    appName,
-    perPage = 20,
-    newFilters = []
-  ) {
+  async function loadSearchableStacktrace(appName, perPage = 20) {
     loading.value = true;
-
-    filters = newFilters;
 
     const response = await postRequest({
       endpoint: `services/searchable/${appName}/${perPage}`,
-      payload: filters,
+      payload: { filters: getFilters() },
     });
 
     setData(response);
@@ -49,6 +43,10 @@ export const useStacktraceStore = defineStore("stacktrace", () => {
   }
 
   async function requestStacktraces(exception_ids) {
+    // Filter away any duplicate ids:
+    const existingIds = stacktraces.value.map((v) => v.id);
+    exception_ids = exception_ids.filter((v) => !existingIds.includes(v));
+
     const response = await postRequest({
       endpoint: "services/load",
       payload: { ids: exception_ids },
@@ -71,7 +69,7 @@ export const useStacktraceStore = defineStore("stacktrace", () => {
 
     const response = await postRequest({
       endpoint: url,
-      payload: filters,
+      payload: { filters: getFilters() },
     });
 
     setData(response);
@@ -90,12 +88,24 @@ export const useStacktraceStore = defineStore("stacktrace", () => {
 
     const response = await postRequest({
       endpoint: url,
-      payload: filters,
+      payload: { filters: getFilters() },
     });
 
     setData(response);
 
     loading.value = false;
+  }
+
+  function getFilters() {
+    const filterStore = useFilterStore();
+
+    const filters = filterStore.activeFilters.map((f) => ({
+      ...f,
+      type: f.type.value,
+    }));
+
+    console.log(filters);
+    return filters;
   }
 
   return {

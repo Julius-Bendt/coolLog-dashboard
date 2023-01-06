@@ -54,7 +54,6 @@ export const useAuthenticationStore = defineStore("authentication", () => {
 
     if (azureAccount) {
       const data = await auth.acquireTokenSilent(tokenConfig);
-      console.log(data);
       await loginFromBackend(data.accessToken);
     }
   }
